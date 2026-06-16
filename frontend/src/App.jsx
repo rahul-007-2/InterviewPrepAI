@@ -20,6 +20,9 @@ function App() {
           <p>
             Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
           </p>
+          <p>
+            I am Rahul.Welcome to your new Vite + React project!
+          </p>
         </div>
         <button
           type="button"
