@@ -46,14 +46,21 @@ exports.submitAnswer = async (req, res) => {
     };
 
     try {
-      const prompt = `
-You are grading an interview answer.
+const prompt = `
+You are a strict but helpful interview coach.
 
-Give ONLY this JSON object. No markdown. No code. No explanation.
+Evaluate the candidate answer based on:
+1. Relevance to the question
+2. Clarity
+3. Specific details
+4. Confidence
+5. What can be improved
+
+Return ONLY valid JSON. No markdown. No code.
 
 {
-  "score": 7,
-  "feedback": "one short sentence"
+  "score": 0,
+  "feedback": "Give 2-3 specific sentences. Mention what was good and exactly how to improve."
 }
 
 Question: ${question.title}
