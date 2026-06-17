@@ -1,0 +1,53 @@
+const pool = require("../config/db");
+
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
+const model = genAI.getGenerativeModel({
+  model: "gemini-1.5-flash",
+});
+
+exports.startInterview = async (req, res) => {
+  try {
+    const result = await pool.query(
+      "SELECT * FROM questions ORDER BY RANDOM() LIMIT 5"
+    );
+
+    res.json(result.rows);
+
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Server Error",
+    });
+  }
+};
+      `
+      SELECT
+      attempts.id,
+      questions.title,
+      attempts.answer,
+      attempts.score,
+      attempts.feedback,
+      attempts.created_at
+      FROM attempts
+      JOIN questions
+      ON questions.id = attempts.question_id
+      WHERE attempts.user_id = $1
+      ORDER BY attempts.created_at DESC
+      `,
+      [req.user.id]
+    );
+
+    res.json(result.rows);
+
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Server Error",
+    });
+  }
+};
