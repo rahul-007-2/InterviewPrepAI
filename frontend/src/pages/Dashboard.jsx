@@ -1,7 +1,7 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   BarChart3,
-  BookOpen,
   Brain,
   Clock3,
   History,
@@ -12,145 +12,174 @@ import {
   Trophy,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import AppLayout from "../components/AppLayout";
+import useAuth from "../hooks/useAuth";
+import API from "../api/axios";
 
 function Dashboard() {
   const navigate = useNavigate();
-  const hour = new Date().getHours();
+  const { user } = useAuth();
 
+  const [history, setHistory] = useState([]);
+
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        const res = await API.get("/api/interview/history");
+        setHistory(res.data);
+      } catch {
+        setHistory([]);
+      }
+    };
+
+    fetchHistory();
+  }, []);
+
+  const hour = new Date().getHours();
   let greeting = "Good evening";
+
   if (hour < 12) greeting = "Good morning";
   else if (hour < 17) greeting = "Good afternoon";
 
+  const latestScore = history.length > 0 ? `${history[0].score}/10` : "—";
+  const attempts = history.length;
+  const avgScore =
+    history.length > 0
+      ? Math.round(
+          history.reduce((sum, item) => sum + Number(item.score || 0), 0) /
+            history.length
+        )
+      : 0;
+
   return (
-    <main className="dashboard-layout">
-      <aside className="sidebar">
-        <div className="side-menu">
-          <div className="side-link active">
-            <BarChart3 size={20} />
-            Dashboard
-          </div>
-
-          <div className="side-link" onClick={() => navigate("/interview")}>
-            <Play size={20} />
-            Start Interview
-          </div>
-
-          <div className="side-link" onClick={() => navigate("/history")}>
-            <History size={20} />
-            History
-          </div>
-
-          <div className="side-link">
-            <BookOpen size={20} />
-            Question Bank
-          </div>
+    <AppLayout active="dashboard">
+      <motion.div
+        className="dashboard-hero"
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        <div className="dashboard-badge">
+          {greeting}, {user?.name || "there"} 👋
         </div>
 
-        <div className="side-note">
-          <Sparkles size={26} />
-          <h3>Daily Tip</h3>
-          <p>Use specific project examples when answering interview questions.</p>
-        </div>
-      </aside>
+        <h1>
+          Ready to sharpen your{" "}
+          <span className="gradient-text">interview skills?</span>
+        </h1>
 
-      <section className="main-content">
-        <motion.div className="dashboard-hero" initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="dashboard-badge">
-            {greeting}, Rahul 👋
+        <p>
+          Start a mock interview, receive AI-powered feedback, and track your
+          performance over time.
+        </p>
+      </motion.div>
+
+      <div className="glow-divider" />
+
+      <section className="stats-row">
+        <div className="stat-large">
+          <div className="icon-bubble blue">
+            <Target size={24} />
           </div>
-
-          <h1>
-            Ready to sharpen your <span className="gradient-text">interview skills?</span>
-          </h1>
-
-          <p>
-            Start a mock interview, receive AI-powered feedback, and track your performance over time.
-          </p>
-        </motion.div>
-
-        <div className="action-grid">
-          <motion.div className="action-card" whileHover={{ y: -6 }} onClick={() => navigate("/interview")}>
-            <div className="icon-bubble purple">
-              <Brain size={30} />
-            </div>
-            <h3>Start Interview</h3>
-            <p>Begin an AI-powered mock interview with random questions.</p>
-          </motion.div>
-
-          <motion.div className="action-card" whileHover={{ y: -6 }} onClick={() => navigate("/history")}>
-            <div className="icon-bubble blue">
-              <History size={30} />
-            </div>
-            <h3>View History</h3>
-            <p>Review your previous attempts, scores, and feedback.</p>
-          </motion.div>
-
-          <motion.div className="action-card" whileHover={{ y: -6 }}>
-            <div className="icon-bubble green">
-              <MessageSquareText size={30} />
-            </div>
-            <h3>AI Feedback</h3>
-            <p>Understand what was good and what needs improvement.</p>
-          </motion.div>
-        </div>
-
-        <section className="overview-card">
-          <h3>Performance Overview</h3>
-
-          <div className="metrics">
-            <div className="metric">
-              <div className="icon-bubble blue">
-                <Target size={24} />
-              </div>
-              <div>
-                <span className="metric-value">5</span>
-                <span className="metric-label">Questions</span>
-              </div>
-            </div>
-
-            <div className="metric">
-              <div className="icon-bubble green">
-                <Trophy size={24} />
-              </div>
-              <div>
-                <span className="metric-value">7/10</span>
-                <span className="metric-label">Latest Score</span>
-              </div>
-            </div>
-
-            <div className="metric">
-              <div className="icon-bubble purple">
-                <Clock3 size={24} />
-              </div>
-              <div>
-                <span className="metric-value">Live</span>
-                <span className="metric-label">AI Evaluation</span>
-              </div>
-            </div>
-
-            <div className="metric">
-              <div className="icon-bubble orange">
-                <BarChart3 size={24} />
-              </div>
-              <div>
-                <span className="metric-value">MVP</span>
-                <span className="metric-label">Backend Ready</span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="quote-card">
           <div>
-            <div className="quote-mark">“</div>
-            <p>
-              The best way to prepare for interviews is to practice answering clearly, repeatedly, and with feedback.
-            </p>
+            <strong>{attempts}</strong>
+            <span>Total Attempts</span>
           </div>
-          <Sparkles size={40} />
-        </section>
+        </div>
+
+        <div className="stat-large">
+          <div className="icon-bubble green">
+            <Trophy size={24} />
+          </div>
+          <div>
+            <strong>{latestScore}</strong>
+            <span>Latest Score</span>
+          </div>
+        </div>
+
+        <div className="stat-large">
+          <div className="icon-bubble purple">
+            <BarChart3 size={24} />
+          </div>
+          <div>
+            <strong>{avgScore || "—"}</strong>
+            <span>Average Score</span>
+          </div>
+        </div>
       </section>
-    </main>
+
+      <section className="action-panel">
+        <div className="bot-visual" />
+
+        <div>
+          <h2>Your AI interview coach is ready</h2>
+          <p>
+            Practice with real interview questions, submit your answer, and get
+            instant scoring with feedback.
+          </p>
+
+          <div className="action-buttons">
+            <button
+              className="action-btn"
+              onClick={() => navigate("/interview")}
+            >
+              <Play size={20} />
+              Start Interview
+            </button>
+
+            <button
+              className="action-btn secondary"
+              onClick={() => navigate("/history")}
+            >
+              <History size={20} />
+              View History
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section className="quote-card">
+        <div>
+          <div className="quote-mark">“</div>
+          <p>
+            The best way to prepare for interviews is to practice answering
+            clearly, repeatedly, and with feedback.
+          </p>
+        </div>
+        <Sparkles size={40} />
+      </section>
+
+      <section className="stats-row" style={{ marginTop: "24px" }}>
+        <div className="stat-large">
+          <div className="icon-bubble purple">
+            <Brain size={24} />
+          </div>
+          <div>
+            <strong>AI</strong>
+            <span>Local Evaluation</span>
+          </div>
+        </div>
+
+        <div className="stat-large">
+          <div className="icon-bubble blue">
+            <MessageSquareText size={24} />
+          </div>
+          <div>
+            <strong>Live</strong>
+            <span>Feedback Engine</span>
+          </div>
+        </div>
+
+        <div className="stat-large">
+          <div className="icon-bubble orange">
+            <Clock3 size={24} />
+          </div>
+          <div>
+            <strong>24/7</strong>
+            <span>Practice Anytime</span>
+          </div>
+        </div>
+      </section>
+    </AppLayout>
   );
 }
 

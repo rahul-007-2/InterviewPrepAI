@@ -1,10 +1,13 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { Brain, Sparkles, Trophy, Target } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Sparkles, Target, Trophy } from "lucide-react";
 import { motion } from "framer-motion";
-import API from "../api/axios";
+import useAuth from "../hooks/useAuth";
 
 function Register() {
+  const navigate = useNavigate();
+  const { register } = useAuth();
+
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [message, setMessage] = useState("");
   const [success, setSuccess] = useState(false);
@@ -16,9 +19,13 @@ function Register() {
     setLoading(true);
 
     try {
-      const res = await API.post("/api/auth/register", form);
+      const res = await register(form);
       setSuccess(true);
-      setMessage(`Account created for ${res.data.email}`);
+      setMessage(`Account created for ${res.email}. Redirecting to login...`);
+
+      setTimeout(() => {
+        navigate("/login");
+      }, 900);
     } catch (err) {
       setSuccess(false);
       setMessage(err.response?.data?.message || "Registration failed");
@@ -80,6 +87,7 @@ function Register() {
               <input
                 placeholder="Rahul"
                 required
+                value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
               />
             </div>
@@ -90,6 +98,7 @@ function Register() {
                 type="email"
                 placeholder="you@example.com"
                 required
+                value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
               />
             </div>
@@ -100,6 +109,7 @@ function Register() {
                 type="password"
                 placeholder="Minimum 6 characters"
                 required
+                value={form.password}
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
               />
             </div>

@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Brain, LineChart, MessageSquareText, ShieldCheck } from "lucide-react";
+import { LineChart, MessageSquareText, ShieldCheck } from "lucide-react";
 import { motion } from "framer-motion";
-import API from "../api/axios";
+import useAuth from "../hooks/useAuth";
 
 function Login() {
   const navigate = useNavigate();
+  const { login } = useAuth();
+
   const [form, setForm] = useState({ email: "", password: "" });
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -16,8 +18,7 @@ function Login() {
     setLoading(true);
 
     try {
-      const res = await API.post("/api/auth/login", form);
-      localStorage.setItem("token", res.data.token);
+      await login(form);
       navigate("/dashboard");
     } catch (err) {
       setMessage(err.response?.data?.message || "Login failed");
@@ -76,6 +77,7 @@ function Login() {
                 type="email"
                 placeholder="you@example.com"
                 required
+                value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
               />
             </div>
@@ -86,6 +88,7 @@ function Login() {
                 type="password"
                 placeholder="Enter your password"
                 required
+                value={form.password}
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
               />
             </div>
